@@ -1,137 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Watch Party with Voice Call</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
-    video { width: 80%; max-width: 720px; margin-bottom: 10px; }
-    #remoteAudio { display: none; }
-  </style>
+  <meta charset="UTF-8" />
+  <title>2-Person Call</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Watch Party with Voice Call</h1>
+  <h2>2-Person Call + Screen Share</h2>
 
-  <input id="roomInput" placeholder="Enter room name" />
-  <button id="joinBtn">Join Room</button>
-
-  <div id="party" style="display:none;">
-    <video id="video" controls crossorigin="anonymous" playsinline>
-      <source id="videoSource" src="" type="video/mp4" />
-      Your browser does not support the video tag.
-    </video>
-    <br/>
-    <button id="startCallBtn">Start Voice Call</button>
-    <audio id="remoteAudio" autoplay></audio>
+  <div class="video-container">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
   </div>
 
-  <script src="/socket.io/socket.io.js"></script>
-  <script>
-    const socket = io();
-    let room = null;
-    let peerConnection = null;
-    let localStream = null;
+  <div class="controls">
+    <button onclick="startCall()">Start Call</button>
+    <button onclick="shareScreen()">Share Screen</button>
+  </div>
 
-    const video = document.getElementById('video');
-    const videoSource = document.getElementById('videoSource');
-    const remoteAudio = document.getElementById('remoteAudio');
-
-    const joinBtn = document.getElementById('joinBtn');
-    const roomInput = document.getElementById('roomInput');
-    const partyDiv = document.getElementById('party');
-    const startCallBtn = document.getElementById('startCallBtn');
-
-    // Replace this with your allowed video URL (must support CORS and embedding)
-    const VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-
-    joinBtn.onclick = () => {
-      room = roomInput.value.trim();
-      if (!room) {
-        alert('Please enter a room name');
-        return;
-      }
-      socket.emit('join-room', room);
-      partyDiv.style.display = 'block';
-      roomInput.disabled = true;
-      joinBtn.disabled = true;
-
-      videoSource.src = VIDEO_URL;
-      video.load();
-    };
-
-    // Sync video events
-    video.addEventListener('play', () => {
-      socket.emit('video-event', { room, event: { type: 'play', currentTime: video.currentTime } });
-    });
-
-    video.addEventListener('pause', () => {
-      socket.emit('video-event', { room, event: { type: 'pause', currentTime: video.currentTime } });
-    });
-
-    video.addEventListener('seeked', () => {
-      socket.emit('video-event', { room, event: { type: 'seek', currentTime: video.currentTime } });
-    });
-
-    socket.on('video-event', (event) => {
-      if (!room) return;
-      if (event.type === 'play') {
-        video.currentTime = event.currentTime;
-        video.play();
-      } else if (event.type === 'pause') {
-        video.currentTime = event.currentTime;
-        video.pause();
-      } else if (event.type === 'seek') {
-        video.currentTime = event.currentTime;
-      }
-    });
-
-    // WebRTC voice call setup
-    const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
-
-    startCallBtn.onclick = async () => {
-      if (peerConnection) {
-        alert('Call already started');
-        return;
-      }
-      try {
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      } catch (e) {
-        alert('Microphone access denied or not available');
-        return;
-      }
-
-      peerConnection = new RTCPeerConnection(configuration);
-
-      localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-      peerConnection.ontrack = (event) => {
-        remoteAudio.srcObject = event.streams[0];
-        remoteAudio.style.display = 'block';
-      };
-
-      peerConnection.onicecandidate = (event) => {
-        if (event.candidate) {
-          socket.emit('webrtc-ice-candidate', { room, candidate: event.candidate });
-        }
-      };
-
-      const offer = await peerConnection.createOffer();
-      await peerConnection.setLocalDescription(offer);
-      socket.emit('webrtc-offer', { room, sdp: offer });
-    };
-
-    socket.on('webrtc-offer', async (data) => {
-      if (!peerConnection) {
-        try {
-          localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        } catch (e) {
-          alert('Microphone access denied or not available');
-          return;
-        }
-        peerConnection = new RTCPeerConnection(configuration);
-        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-        peerConnection.ontrack = (event) => {
-          remoteAudio.srcObject = event.streams[0];
-          remoteAudio.style.display = 'block';
-        };
-
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <script src="firebase.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
