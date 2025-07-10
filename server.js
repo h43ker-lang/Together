@@ -11,21 +11,28 @@ app.use(express.static('public'));
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
+  // Relay video control events to others in the room
   socket.on('video-event', (data) => {
-    // Broadcast video control events to other users
-    socket.broadcast.emit('video-event', data);
+    socket.broadcast.to(data.room).emit('video-event', data.event);
   });
 
+  // Join room
+  socket.on('join-room', (room) => {
+    socket.join(room);
+    console.log(`User ${socket.id} joined room ${room}`);
+  });
+
+  // WebRTC signaling for voice call
   socket.on('webrtc-offer', (data) => {
-    socket.broadcast.emit('webrtc-offer', data);
+    socket.broadcast.to(data.room).emit('webrtc-offer', { sdp: data.sdp, from: socket.id });
   });
 
   socket.on('webrtc-answer', (data) => {
-    socket.broadcast.emit('webrtc-answer', data);
+    socket.broadcast.to(data.room).emit('webrtc-answer', { sdp: data.sdp, from: socket.id });
   });
 
   socket.on('webrtc-ice-candidate', (data) => {
-    socket.broadcast.emit('webrtc-ice-candidate', data);
+    socket.broadcast.to(data.room).emit('webrtc-ice-candidate', { candidate: data.candidate, from: socket.id });
   });
 
   socket.on('disconnect', () => {
@@ -33,6 +40,7 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(3000, () => {
-  console.log('Server listening on port 3000');
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
