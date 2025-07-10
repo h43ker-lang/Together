@@ -2,25 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Screen Share + Call</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebRTC Call + Screen Share</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>2-Person Call + Screen Share (No Backend)</h2>
+  <main>
+    <h1>🔗 2-Person Call + Screen Share</h1>
 
-  <div class="video-container">
-    <video id="localVideo" autoplay muted playsinline></video>
-    <video id="remoteVideo" autoplay playsinline></video>
-  </div>
+    <section class="video-grid">
+      <div class="video-box">
+        <label>📹 You</label>
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+      <div class="video-box">
+        <label>🎥 Partner</label>
+        <video id="remoteVideo" autoplay playsinline></video>
+      </div>
+    </section>
 
-  <div class="controls">
-    <p>Your ID: <span id="my-id">Loading...</span></p>
-    <input type="text" id="peer-id-input" placeholder="Enter partner ID" />
-    <button onclick="startCall()">Call</button>
-    <button onclick="shareScreen()">Share Screen</button>
-  </div>
+    <section class="controls">
+      <p><strong>Your ID:</strong> <span id="my-id">Loading...</span></p>
+      <input id="peer-id-input" type="text" placeholder="Enter partner's ID..." />
+      <div class="buttons">
+        <button onclick="startCall()">📞 Call</button>
+        <button onclick="shareScreen()">🖥️ Share Screen</button>
+      </div>
+    </section>
+  </main>
 
-  <!-- PeerJS Library -->
+  <!-- PeerJS -->
   <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
   <script src="app.js"></script>
 </body>
