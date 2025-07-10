@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>2-Person Call</title>
+  <title>Screen Share + Call</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>2-Person Call + Screen Share</h2>
+  <h2>2-Person Call + Screen Share (No Backend)</h2>
 
   <div class="video-container">
     <video id="localVideo" autoplay muted playsinline></video>
@@ -14,13 +14,14 @@
   </div>
 
   <div class="controls">
-    <button onclick="startCall()">Start Call</button>
+    <p>Your ID: <span id="my-id">Loading...</span></p>
+    <input type="text" id="peer-id-input" placeholder="Enter partner ID" />
+    <button onclick="startCall()">Call</button>
     <button onclick="shareScreen()">Share Screen</button>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-  <script src="firebase.js"></script>
+  <!-- PeerJS Library -->
+  <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
