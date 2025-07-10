@@ -74,7 +74,6 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    /* Floating hearts animation */
     .floating-heart {
       position: absolute;
       color: pink;
@@ -94,7 +93,6 @@
       }
     }
 
-    /* Background sparkles */
     .sparkle {
       position: absolute;
       width: 6px;
@@ -110,7 +108,6 @@
       50% { opacity: 1; transform: scale(1.5); }
     }
 
-    /* Optional: add flower petal fall */
     .petal {
       position: absolute;
       width: 20px;
@@ -138,7 +135,7 @@
     <p>Since I met you, my life has been full of magic.</p>
     <p>Every heartbeat whispers your name.</p>
     <h2>Will you marry me? 💍</h2>
-    <button class="button">Yes, I do! 😍</button>
+    <button class="button" onclick="sendToTelegram()">Yes, I do! 😍</button>
   </div>
 
   <script>
@@ -172,6 +169,24 @@
       document.body.appendChild(petal);
       setTimeout(() => petal.remove(), 10000);
     }, 400);
+
+    // Send message to Telegram via backend
+    function sendToTelegram() {
+      fetch('https://your-backend-url.com/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: "💍 Manjushri said YES! 💖💖💖"
+        })
+      })
+      .then(res => {
+        alert("Message sent, baby 💌");
+      })
+      .catch(err => {
+        alert("Something went wrong!");
+        console.error(err);
+      });
+    }
   </script>
 </body>
 </html>
