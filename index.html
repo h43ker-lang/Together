@@ -10,7 +10,7 @@
       margin: 0;
       overflow: hidden;
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(120deg, #ffb6c1, #ffe4e1);
+      background: radial-gradient(circle, #ffe4e1, #ffb6c1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -26,37 +26,30 @@
     }
 
     h1 {
-      font-size: 3.5rem;
+      font-size: 4rem;
       font-family: 'Great Vibes', cursive;
       color: #fff0f5;
       animation: glow 2s ease-in-out infinite alternate;
     }
 
     p, h2 {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       margin: 10px;
       animation: slideIn 2s ease forwards;
     }
 
     .heart {
-      font-size: 5rem;
+      font-size: 6rem;
       animation: pulse 1.5s infinite;
       color: red;
     }
 
-    .button {
-      background-color: #ff6b81;
-      border: none;
-      padding: 15px 30px;
-      color: white;
-      font-size: 1.2rem;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    .button:hover {
-      background-color: #ff4757;
+    .signature {
+      margin-top: 30px;
+      font-family: 'Great Vibes', cursive;
+      font-size: 2rem;
+      color: #fff8f8;
+      animation: fadeIn 3s ease-in;
     }
 
     @keyframes pulse {
@@ -74,27 +67,28 @@
       to { transform: translateY(0); opacity: 1; }
     }
 
-    .floating-heart {
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .floating-heart, .star, .firefly, .circle {
       position: absolute;
-      color: pink;
-      font-size: 20px;
-      animation: floatUp linear infinite;
       pointer-events: none;
     }
 
-    @keyframes floatUp {
-      0% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
-      }
-      100% {
-        transform: translateY(-100vh) scale(1.5);
-        opacity: 0;
-      }
+    .floating-heart {
+      color: pink;
+      font-size: 20px;
+      animation: floatUp linear infinite;
     }
 
-    .sparkle {
-      position: absolute;
+    @keyframes floatUp {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-100vh) scale(1.5); opacity: 0; }
+    }
+
+    .sparkle, .star {
       width: 6px;
       height: 6px;
       background: white;
@@ -109,7 +103,6 @@
     }
 
     .petal {
-      position: absolute;
       width: 20px;
       height: 20px;
       background: radial-gradient(circle, pink 60%, transparent 60%);
@@ -119,12 +112,34 @@
     }
 
     @keyframes fall {
-      0% {
-        transform: translateY(0) rotate(0deg);
-      }
-      100% {
-        transform: translateY(100vh) rotate(360deg);
-      }
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(100vh) rotate(360deg); }
+    }
+
+    .circle {
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      animation: blink 4s infinite ease-in-out alternate;
+    }
+
+    @keyframes blink {
+      0% { transform: scale(1); opacity: 0.4; }
+      100% { transform: scale(2); opacity: 0.8; }
+    }
+
+    .firefly {
+      width: 4px;
+      height: 4px;
+      background: yellow;
+      border-radius: 50%;
+      animation: fly 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes fly {
+      0% { transform: translate(0, 0); opacity: 0.6; }
+      100% { transform: translate(20px, -30px); opacity: 1; }
     }
   </style>
 </head>
@@ -135,7 +150,7 @@
     <p>Since I met you, my life has been full of magic.</p>
     <p>Every heartbeat whispers your name.</p>
     <h2>Will you marry me? 💍</h2>
-    <button class="button" onclick="sendToTelegram()">Yes, I do! 😍</button>
+    <div class="signature">With all my heart,<br>— Tushar ❤️</div>
   </div>
 
   <script>
@@ -145,22 +160,32 @@
       heart.classList.add("floating-heart");
       heart.innerText = "💖";
       heart.style.left = Math.random() * 100 + "vw";
-      heart.style.animationDuration = 2 + Math.random() * 3 + "s";
+      heart.style.fontSize = (12 + Math.random() * 20) + "px";
+      heart.style.animationDuration = 3 + Math.random() * 4 + "s";
       document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 5000);
-    }, 300);
+      setTimeout(() => heart.remove(), 8000);
+    }, 200);
 
-    // Sparkles
-    for (let i = 0; i < 50; i++) {
-      const sparkle = document.createElement("div");
-      sparkle.classList.add("sparkle");
-      sparkle.style.left = Math.random() * 100 + "vw";
-      sparkle.style.top = Math.random() * 100 + "vh";
-      sparkle.style.animationDuration = 2 + Math.random() * 3 + "s";
-      document.body.appendChild(sparkle);
+    // Sparkles & Stars
+    for (let i = 0; i < 40; i++) {
+      const star = document.createElement("div");
+      star.classList.add("star");
+      star.style.left = Math.random() * 100 + "vw";
+      star.style.top = Math.random() * 100 + "vh";
+      star.style.animationDuration = 2 + Math.random() * 3 + "s";
+      document.body.appendChild(star);
     }
 
-    // Petal fall
+    // Fireflies
+    for (let i = 0; i < 15; i++) {
+      const bug = document.createElement("div");
+      bug.classList.add("firefly");
+      bug.style.left = Math.random() * 100 + "vw";
+      bug.style.top = Math.random() * 100 + "vh";
+      document.body.appendChild(bug);
+    }
+
+    // Petals
     setInterval(() => {
       const petal = document.createElement("div");
       petal.classList.add("petal");
@@ -168,15 +193,25 @@
       petal.style.animationDuration = 4 + Math.random() * 5 + "s";
       document.body.appendChild(petal);
       setTimeout(() => petal.remove(), 10000);
-    }, 400);
+    }, 300);
 
-    // Send message to Telegram via backend
-    function sendToTelegram() {
+    // Glow Circles
+    for (let i = 0; i < 25; i++) {
+      const circle = document.createElement("div");
+      circle.classList.add("circle");
+      circle.style.left = Math.random() * 100 + "vw";
+      circle.style.top = Math.random() * 100 + "vh";
+      circle.style.animationDuration = 2 + Math.random() * 3 + "s";
+      document.body.appendChild(circle);
+    }
+
+    // Auto-send message to Telegram
+    window.onload = function sendToTelegram() {
       fetch('https://your-backend-url.com/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: "💍 Manjushri said YES! 💖💖💖"
+          message: "💍 Manjushri saw the proposal page! From Tushar 💖"
         })
       })
       .then(res => {
@@ -186,7 +221,7 @@
         alert("Something went wrong!");
         console.error(err);
       });
-    }
+    };
   </script>
 </body>
 </html>
