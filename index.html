@@ -1,119 +1,137 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Watch Together</title>
+  <title>Watch Party with Voice Call</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+    video { width: 80%; max-width: 720px; margin-bottom: 10px; }
+    #remoteAudio { display: none; }
+  </style>
 </head>
 <body>
-  <video id="video" width="640" controls>
-    <source src="your-movie.mp4" type="video/mp4">
-  </video>
+  <h1>Watch Party with Voice Call</h1>
 
-  <button id="startCall">Start Voice Call</button>
+  <input id="roomInput" placeholder="Enter room name" />
+  <button id="joinBtn">Join Room</button>
+
+  <div id="party" style="display:none;">
+    <video id="video" controls crossorigin="anonymous" playsinline>
+      <source id="videoSource" src="" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+    <br/>
+    <button id="startCallBtn">Start Voice Call</button>
+    <audio id="remoteAudio" autoplay></audio>
+  </div>
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
     const socket = io();
+    let room = null;
+    let peerConnection = null;
+    let localStream = null;
+
     const video = document.getElementById('video');
+    const videoSource = document.getElementById('videoSource');
+    const remoteAudio = document.getElementById('remoteAudio');
+
+    const joinBtn = document.getElementById('joinBtn');
+    const roomInput = document.getElementById('roomInput');
+    const partyDiv = document.getElementById('party');
+    const startCallBtn = document.getElementById('startCallBtn');
+
+    // Replace this with your allowed video URL (must support CORS and embedding)
+    const VIDEO_URL = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+    joinBtn.onclick = () => {
+      room = roomInput.value.trim();
+      if (!room) {
+        alert('Please enter a room name');
+        return;
+      }
+      socket.emit('join-room', room);
+      partyDiv.style.display = 'block';
+      roomInput.disabled = true;
+      joinBtn.disabled = true;
+
+      videoSource.src = VIDEO_URL;
+      video.load();
+    };
 
     // Sync video events
     video.addEventListener('play', () => {
-      socket.emit('video-event', { type: 'play', currentTime: video.currentTime });
+      socket.emit('video-event', { room, event: { type: 'play', currentTime: video.currentTime } });
     });
 
     video.addEventListener('pause', () => {
-      socket.emit('video-event', { type: 'pause', currentTime: video.currentTime });
+      socket.emit('video-event', { room, event: { type: 'pause', currentTime: video.currentTime } });
     });
 
     video.addEventListener('seeked', () => {
-      socket.emit('video-event', { type: 'seek', currentTime: video.currentTime });
+      socket.emit('video-event', { room, event: { type: 'seek', currentTime: video.currentTime } });
     });
 
-    socket.on('video-event', (data) => {
-      if (data.type === 'play') {
-        video.currentTime = data.currentTime;
+    socket.on('video-event', (event) => {
+      if (!room) return;
+      if (event.type === 'play') {
+        video.currentTime = event.currentTime;
         video.play();
-      } else if (data.type === 'pause') {
-        video.currentTime = data.currentTime;
+      } else if (event.type === 'pause') {
+        video.currentTime = event.currentTime;
         video.pause();
-      } else if (data.type === 'seek') {
-        video.currentTime = data.currentTime;
+      } else if (event.type === 'seek') {
+        video.currentTime = event.currentTime;
       }
     });
 
-    // WebRTC voice call setup (simplified)
-    let localStream;
-    let peerConnection;
+    // WebRTC voice call setup
     const configuration = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
 
-    document.getElementById('startCall').onclick = async () => {
-      localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    startCallBtn.onclick = async () => {
+      if (peerConnection) {
+        alert('Call already started');
+        return;
+      }
+      try {
+        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        alert('Microphone access denied or not available');
+        return;
+      }
+
       peerConnection = new RTCPeerConnection(configuration);
 
       localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
       peerConnection.ontrack = (event) => {
-        const remoteAudio = document.getElementById('remoteAudio') || (() => {
-          const audio = document.createElement('audio');
-          audio.id = 'remoteAudio';
-          audio.autoplay = true;
-          document.body.appendChild(audio);
-          return audio;
-        })();
         remoteAudio.srcObject = event.streams[0];
+        remoteAudio.style.display = 'block';
       };
 
       peerConnection.onicecandidate = (event) => {
         if (event.candidate) {
-          socket.emit('webrtc-ice-candidate', event.candidate);
+          socket.emit('webrtc-ice-candidate', { room, candidate: event.candidate });
         }
       };
 
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      socket.emit('webrtc-offer', offer);
+      socket.emit('webrtc-offer', { room, sdp: offer });
     };
 
-    socket.on('webrtc-offer', async (offer) => {
+    socket.on('webrtc-offer', async (data) => {
       if (!peerConnection) {
+        try {
+          localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+          alert('Microphone access denied or not available');
+          return;
+        }
         peerConnection = new RTCPeerConnection(configuration);
-        localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
         localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
         peerConnection.ontrack = (event) => {
-          const remoteAudio = document.getElementById('remoteAudio') || (() => {
-            const audio = document.createElement('audio');
-            audio.id = 'remoteAudio';
-            audio.autoplay = true;
-            document.body.appendChild(audio);
-            return audio;
-          })();
           remoteAudio.srcObject = event.streams[0];
+          remoteAudio.style.display = 'block';
         };
 
-        peerConnection.onicecandidate = (event) => {
-          if (event.candidate) {
-            socket.emit('webrtc-ice-candidate', event.candidate);
-          }
-        };
-      }
-
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
-      const answer = await peerConnection.createAnswer();
-      await peerConnection.setLocalDescription(answer);
-      socket.emit('webrtc-answer', answer);
-    });
-
-    socket.on('webrtc-answer', async (answer) => {
-      await peerConnection.setRemoteDescription(new RTCSessionDescription(answer));
-    });
-
-    socket.on('webrtc-ice-candidate', async (candidate) => {
-      try {
-        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-      } catch (e) {
-        console.error('Error adding received ice candidate', e);
-      }
-    });
-  </script>
-</body>
-</html>
